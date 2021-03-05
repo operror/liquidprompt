@@ -328,8 +328,8 @@ _lp_dotmatrix_theme_prompt() {
             __dotmatrix_make_sep_link "${DOTMATRIX_COLOR_DARK[@]}"
             prompt+="${dotmatrix_sep}"
         else
-            __dotmatrix_make_sep_plug "${DOTMATRIX_COLOR_DARK[@]}"
-            prompt+="${dotmatrix_sep}"
+            __dotmatrix_make_sep_mid "${DOTMATRIX_COLOR_DARK[@]}"
+            prompt+="${dotmatrix_sep}${DOTMATRIX_SPACE_VOID}"
         fi
 
     fi
