@@ -561,7 +561,7 @@ __dotmatrix_prompt_vcs() {
         # Mark & commits off remote
         local has_commit=
         if _lp_vcs_commits_off_remote; then
-            __dotmatrix_make_field "${DOTMATRIX_VCS}${lp_smart_mark}" "${DOTMATRIX_COLOR_LITE[@]}"
+            __dotmatrix_make_field "${DOTMATRIX_VCS}${lp_smart_mark}" "${DOTMATRIX_COLOR_NOTE[@]}"
             _DOTMATRIX_VCS="${dotmatrix_field}"
 
             __dotmatrix_make_sep_plug "${DOTMATRIX_COLOR_DARK[@]}"
@@ -569,26 +569,26 @@ __dotmatrix_prompt_vcs() {
 
             if (( LP_ENABLE_VCS_DIFFSTATS )) ; then
                 if [[ "$lp_vcs_commit_ahead" -ne "0" && "$lp_vcs_commit_behind" -ne "0" ]]; then
-                    __dotmatrix_make_field "+$lp_vcs_commit_ahead" "${DOTMATRIX_COLOR_DARK[@]}"
+                    __dotmatrix_make_field "+$lp_vcs_commit_ahead" "${DOTMATRIX_COLOR_NOTE[@]}"
                     has_commit+="${dotmatrix_field}"
-                    __dotmatrix_make_sep_soft "${DOTMATRIX_COLOR_DARK[@]}"
+                    __dotmatrix_make_sep_soft "${DOTMATRIX_COLOR_NOTE[@]}"
                     has_commit+="${dotmatrix_sep}"
-                    __dotmatrix_make_field "-$lp_vcs_commit_behind" "${DOTMATRIX_COLOR_DARK[@]}"
+                    __dotmatrix_make_field "-$lp_vcs_commit_behind" "${DOTMATRIX_COLOR_NOTE[@]}"
                     has_commit+="${dotmatrix_field}"
 
                 elif [[ "$lp_vcs_commit_ahead" -ne "0" ]]; then
-                    __dotmatrix_make_field "+$lp_vcs_commit_ahead" "${DOTMATRIX_COLOR_DARK[@]}"
+                    __dotmatrix_make_field "+$lp_vcs_commit_ahead" "${DOTMATRIX_COLOR_NOTE[@]}"
                     has_commit+="${dotmatrix_field}"
 
                 elif [[ "$lp_vcs_commit_behind" -ne "0" ]]; then
-                    __dotmatrix_make_field "-$lp_vcs_commit_behind" "${DOTMATRIX_COLOR_DARK[@]}"
+                    __dotmatrix_make_field "-$lp_vcs_commit_behind" "${DOTMATRIX_COLOR_NOTE[@]}"
                     has_commit+="${dotmatrix_field}"
                 fi
                 _DOTMATRIX_VCS+="${has_commit}"
             else
-                __dotmatrix_make_field "${DOTMATRIX_DIFF}" "${DOTMATRIX_COLOR_DARK[@]}"
+                __dotmatrix_make_field "${DOTMATRIX_DIFF}" "${DOTMATRIX_COLOR_NOTE[@]}"
                 _DOTMATRIX_VCS+="${dotmatrix_field}"
-            fi # LP_ENABLE_VCS_OFFREMOTE
+            fi # LP_ENABLE_VCS_DIFFSTATS
 
             __dotmatrix_make_sep_link "${DOTMATRIX_COLOR_GLOW[@]}"
             _DOTMATRIX_VCS+="${dotmatrix_sep}"
@@ -631,40 +631,47 @@ __dotmatrix_prompt_vcs() {
         # Diff stats
         local ret has_lines=
         if _lp_vcs_uncommitted_files; then
-            __dotmatrix_make_sep_link "${DOTMATRIX_COLOR_DARK[@]}"
+            __dotmatrix_make_sep_link "${DOTMATRIX_COLOR_NOTE[@]}"
             _DOTMATRIX_VCS+="${dotmatrix_sep}"
 
             _lp_vcs_unstaged_lines; ret=$?
             # Only show unstaged changes if the VCS supports staging, otherwise
             # show uncommitted changes
             if (( ret == 0 )); then
-                __dotmatrix_make_field "+$lp_vcs_unstaged_i_lines" "${DOTMATRIX_COLOR_DARK[@]}"
-                has_lines="${dotmatrix_field}"
-                __dotmatrix_make_sep_soft "${DOTMATRIX_COLOR_SEP_DARK[@]}"
-                has_lines+="$dotmatrix_sep"
-                __dotmatrix_make_field "-$lp_vcs_unstaged_d_lines" "${DOTMATRIX_COLOR_DARK[@]}"
-                has_lines+="${dotmatrix_field}"
+                if [[ "$lp_vcs_unstaged_i_lines" == "$lp_vcs_unstaged_d_lines" ]] ; then
+                    # If same number of lines inserted and deleted: display a single number.
+                    __dotmatrix_make_field "±$lp_vcs_unstaged_i_lines" "${DOTMATRIX_COLOR_NOTE[@]}"
+                    has_lines="${dotmatrix_field}"
+                else
+                    __dotmatrix_make_field "+$lp_vcs_unstaged_i_lines" "${DOTMATRIX_COLOR_NOTE[@]}"
+                    has_lines="${dotmatrix_field}"
+                    __dotmatrix_make_sep_soft "${DOTMATRIX_COLOR_SEP_NOTE[@]}"
+                    has_lines+="$dotmatrix_sep"
+                    __dotmatrix_make_field "-$lp_vcs_unstaged_d_lines" "${DOTMATRIX_COLOR_NOTE[@]}"
+                    has_lines+="${dotmatrix_field}"
+                fi
 
             elif (( ret == 1 )); then
-                __dotmatrix_make_field "+0" "${DOTMATRIX_COLOR_DARK[@]}"
+                __dotmatrix_make_field "±0" "${DOTMATRIX_COLOR_DARK[@]}"
                 has_lines="+${dotmatrix_field}"
-                __dotmatrix_make_sep_soft "${DOTMATRIX_COLOR_SEP_DARK[@]}"
-                has_lines+="$dotmatrix_sep"
-                __dotmatrix_make_field "-0" "${DOTMATRIX_COLOR_DARK[@]}"
-                has_lines+="-${dotmatrix_field}"
             else
                 _lp_vcs_uncommitted_lines
-                __dotmatrix_make_field "+$lp_vcs_uncommitted_i_lines" "${DOTMATRIX_COLOR_DARK[@]}"
-                has_lines="${dotmatrix_field}"
-                __dotmatrix_make_sep_soft "${DOTMATRIX_COLOR_SEP_DARK[@]}"
-                has_lines+="$dotmatrix_sep"
-                __dotmatrix_make_field "-$lp_vcs_uncommitted_d_lines" "${DOTMATRIX_COLOR_DARK[@]}"
-                has_lines+="${dotmatrix_field}"
+                if [[ "$lp_vcs_uncommitted_i_lines" == "$lp_vcs_uncommitted_d_lines" ]] ; then
+                    __dotmatrix_make_field "±$lp_vcs_uncommitted_i_lines" "${DOTMATRIX_COLOR_NOTE[@]}"
+                    has_lines="${dotmatrix_field}"
+                else
+                    __dotmatrix_make_field "+$lp_vcs_uncommitted_i_lines" "${DOTMATRIX_COLOR_NOTE[@]}"
+                    has_lines="${dotmatrix_field}"
+                    __dotmatrix_make_sep_soft "${DOTMATRIX_COLOR_SEP_NOTE[@]}"
+                    has_lines+="$dotmatrix_sep"
+                    __dotmatrix_make_field "-$lp_vcs_uncommitted_d_lines" "${DOTMATRIX_COLOR_NOTE[@]}"
+                    has_lines+="${dotmatrix_field}"
+                fi
             fi
             if (( LP_ENABLE_VCS_DIFFSTATS )) ; then
                 _DOTMATRIX_VCS+="${has_lines}"
             else
-                __dotmatrix_make_field "${DOTMATRIX_DIFF}" "${DOTMATRIX_COLOR_DARK[@]}"
+                __dotmatrix_make_field "${DOTMATRIX_DIFF}" "${DOTMATRIX_COLOR_NOTE[@]}"
                 _DOTMATRIX_VCS+="${dotmatrix_field}"
             fi # LP_ENABLE_VCS_DIFFSTATS
         fi # uncommitted files
