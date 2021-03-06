@@ -132,6 +132,7 @@ _lp_dotmatrix_theme_activate() {
     [[ -z ${DOTMATRIX_COLOR_GLOW[@]+x} ]] && DOTMATRIX_COLOR_GLOW=(  0 252 1 0   0  15)
     [[ -z ${DOTMATRIX_COLOR_NOTE[@]+x} ]] && DOTMATRIX_COLOR_NOTE=( 15  33 0 0  15  12)
     [[ -z ${DOTMATRIX_COLOR_WARN[@]+x} ]] && DOTMATRIX_COLOR_WARN=(196 220 1 0   0  11)
+    [[ -z ${DOTMATRIX_COLOR_FAIR[@]+x} ]] && DOTMATRIX_COLOR_FAIR=(  0 244 0 0   0   8)
 
     [[ -z ${DOTMATRIX_COLOR_PATH_SHORT[@]+x} ]] && DOTMATRIX_COLOR_PATH_SHORT=(252 239 0 0   0  15)
     [[ -z ${DOTMATRIX_COLOR_PATH_VCS[@]+x}   ]] && DOTMATRIX_COLOR_PATH_VCS=(252 239 0 1   0  15)
@@ -207,67 +208,78 @@ _lp_dotmatrix_theme_prompt() {
     __dotmatrix_make_sep_side ""
     side="${dotmatrix_sep}"
 
-    # FIXME make an array join instead of those nasty intricated if/then/else
+    # battery / load / temperature
+    __dotmatrix_make_sep_plug "${DOTMATRIX_COLOR_DARK[@]}"
+    local blt_plug="${dotmatrix_sep}"
+
+    local battery=""
     if _lp_battery ; then
-        __dotmatrix_make_sep_plug "${DOTMATRIX_COLOR_DARK[@]}"
-        side+="$dotmatrix_sep"
         __dotmatrix_make_field "$lp_battery" "${DOTMATRIX_COLOR_DARK[@]}"
-        side+="${dotmatrix_field}"
+        battery="${dotmatrix_field}${LP_MARK_BATTERY}"
     fi
 
+    local load=""
     if _lp_load ; then
-        if [[ -n "$lp_battery" ]] ; then
-            __dotmatrix_make_sep_soft "${DOTMATRIX_COLOR_SEP_DARK[@]}"
-            side+="${dotmatrix_sep}"
-        fi
         __dotmatrix_make_field "$lp_load" "${DOTMATRIX_COLOR_DARK[@]}"
-        side+="${dotmatrix_field}"
+        load="${dotmatrix_field}${LP_MARK_LOAD}"
     fi
 
+    local temperature=""
     if _lp_temperature ; then
-        if [[ -n "$lp_battery" || -n "$lb_load" ]] ; then
-            __dotmatrix_make_sep_soft "${DOTMATRIX_COLOR_SEP_DARK[@]}"
-            side+="${dotmatrix_sep}"
-        fi
         __dotmatrix_make_field "$lp_temperature" "${DOTMATRIX_COLOR_DARK[@]}"
-        side+="${dotmatrix_field}"
+        temperature="${dotmatrix_field}${LP_MARK_TEMP}"
     fi
 
+    __dotmatrix_make_sep_soft "${DOTMATRIX_COLOR_SEP_DARK[@]}"
+    # Non-bracketed variables are intentionals,
+    # so that if the variable is null, it does not count in the arguments array.
+    __dotmatrix_join_fields "$dotmatrix_sep" $battery $load $temperature
+    if [[ -n "$dotmatrix_join_fields" ]] ; then
+        side+="${blt_plug}${dotmatrix_join_fields}"
+    else
+        lp_terminal_format "${DOTMATRIX_COLOR_FAIR[@]}"
+        side+="${lp_terminal_format}"
+    fi
+
+    # jobs: detached / running / stopped
+    __dotmatrix_make_sep_plug "${DOTMATRIX_COLOR_LITE[@]}"
+    local djc_plug="${dotmatrix_sep}"
+
+    local detached_sessions=""
     if _lp_detached_sessions ; then
-        __dotmatrix_make_sep_plug "${DOTMATRIX_COLOR_LITE[@]}"
-        side+="$dotmatrix_sep"
-        __dotmatrix_make_field "$lp_detached_sessions" "${DOTMATRIX_COLOR_LITE[@]}"
-        side+="${dotmatrix_field}d"
+        if [[ -n "${lp_detached_sessions}" && "${lp_detached_sessions}" > 0 ]] ; then
+            __dotmatrix_make_field "${lp_detached_sessions}d" "${DOTMATRIX_COLOR_LITE[@]}"
+            detached_sessions="${dotmatrix_field}"
+        fi
     fi
 
+    local running_jobs=""
+    local stopped_jobs=""
     if _lp_jobcount ; then
-        if [[ -n "$lp_detached_sessions" ]] ; then
-            __dotmatrix_make_sep_soft "${DOTMATRIX_COLOR_SEP_LITE[@]}"
-            side+="${dotmatrix_sep}"
-        else
-            __dotmatrix_make_sep_plug "${DOTMATRIX_COLOR_LITE[@]}"
-            side+="${dotmatrix_sep}"
+        if [[ -n "${lp_running_jobs}" && "${lp_running_jobs}" > 0  ]] ; then
+            __dotmatrix_make_field "${lp_running_jobs}&" "${DOTMATRIX_COLOR_LITE[@]}"
+            running_jobs="${dotmatrix_field}"
         fi
 
-        if [[ -n "$lp_running_jobs" ]] ; then
-            __dotmatrix_make_field "$lp_running_jobs" "${DOTMATRIX_COLOR_LITE[@]}"
-            side+="$dotmatrix_field&"
-            if [[ -n "$lp_running_jobs" ]] ; then
-                __dotmatrix_make_sep_soft "${DOTMATRIX_COLOR_SEP_LITE[@]}"
-                side+="${dotmatrix_sep}"
-            fi
+        if [[ -n "${lp_stopped_jobs}" && "${lp_stopped_jobs}" > 0  ]] ; then
+            __dotmatrix_make_field "${lp_stopped_jobs}z" "${DOTMATRIX_COLOR_LITE[@]}"
+            stopped_jobs="${dotmatrix_field}"
         fi
-
-        if [[ -n "$lp_stopped_jobs" ]] ; then
-            __dotmatrix_make_field "$lp_stopped_jobs" "${DOTMATRIX_COLOR_LITE[@]}"
-            side+="${dotmatrix_field}z"
-        fi
-
     fi
 
+    __dotmatrix_make_sep_soft "${DOTMATRIX_COLOR_SEP_LITE[@]}"
+    __dotmatrix_join_fields "$dotmatrix_sep" ${detached_sessions} ${running_jobs} ${stopped_jobs}
+    if [[ -n "$dotmatrix_join_fields" ]] ; then
+        side+="${djc_plug}${dotmatrix_join_fields}"
+    else
+        lp_terminal_format "${DOTMATRIX_COLOR_FAIR[@]}"
+        side+="${lp_terminal_format}"
+    fi
+
+    # clock
     if _lp_time ; then
         __dotmatrix_make_sep_plug "${DOTMATRIX_COLOR_DARK[@]}"
-        side+="$dotmatrix_sep"
+        side+="${dotmatrix_sep}"
         if _lp_analog_time ; then
             __dotmatrix_make_field "$lp_analog_time" "${DOTMATRIX_COLOR_DARK[@]}"
             side+="$dotmatrix_field"
@@ -281,7 +293,7 @@ _lp_dotmatrix_theme_prompt() {
     local side_as_text="$(_lp_as_text "${side}")"
     local head_as_text="$(_lp_as_text "${header}")"
     # FIXME within SSH, COLUMNS seems to be broken
-    local head_width=$((${COLUMNS}-${#side_as_text}-${#head_as_text}-7)) # Why -7? I have no idea.
+    local head_width=$((${COLUMNS}-${#side_as_text}-${#head_as_text}-6)) # Why -6? I have no idea.
     if [[ $head_width -lt 0 ]] ; then
         head_width=0
     fi
@@ -760,6 +772,20 @@ __dotmatrix_prompt_vcs() {
 ########################################################################
 # Helper functions
 ########################################################################
+
+__dotmatrix_join_fields() {
+    dotmatrix_join_fields=""
+    local sep=${1-}
+    shift
+    if [[ -n "$@" ]] ; then
+        local first_field=${1-}
+        shift
+        dotmatrix_join_fields="${first_field}"
+        for f in "$@"; do
+            dotmatrix_join_fields+="${sep}${f}"
+        done
+    fi
+}
 
 __dotmatrix_make_field() { # string, (color array)
     local lp_terminal_format string=${1-}
