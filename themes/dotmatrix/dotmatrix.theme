@@ -597,7 +597,7 @@ __dotmatrix_prompt_vcs() {
             __dotmatrix_make_field "${DOTMATRIX_VCS}${lp_smart_mark}" "${DOTMATRIX_COLOR_NOTE[@]}"
             _DOTMATRIX_VCS="${dotmatrix_field}"
 
-            __dotmatrix_make_sep_plug "${DOTMATRIX_COLOR_DARK[@]}"
+            __dotmatrix_make_sep_link "${DOTMATRIX_COLOR_NOTE[@]}"
             _DOTMATRIX_VCS+="${dotmatrix_sep}"
 
             if (( LP_ENABLE_VCS_DIFFSTATS )) ; then
@@ -623,7 +623,7 @@ __dotmatrix_prompt_vcs() {
                 _DOTMATRIX_VCS+="${dotmatrix_field}"
             fi # LP_ENABLE_VCS_DIFFSTATS
 
-            __dotmatrix_make_sep_link "${DOTMATRIX_COLOR_GLOW[@]}"
+            __dotmatrix_make_sep_plug "${DOTMATRIX_COLOR_LITE[@]}"
             _DOTMATRIX_VCS+="${dotmatrix_sep}"
 
         else # No commit off remote
