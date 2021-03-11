@@ -157,6 +157,7 @@ _lp_dotmatrix_theme_activate() {
 
 
 _lp_dotmatrix_theme_directory() {
+    lp_terminal_format "${DOTMATRIX_COLOR_LITE[@]}"
     __dotmatrix_directory_FS
     __dotmatrix_directory_path
 }
@@ -459,12 +460,17 @@ __dotmatrix_activate_user() {
     user_type=$?
     case $user_type in
         0) # logged-in user
-            __dotmatrix_make_field "${DOTMATRIX_USER_LOCAL}" "${DOTMATRIX_COLOR_DARK[@]}"
-            _DOTMATRIX_USER="${dotmatrix_field}"
+            if [[ -z "${lp_username}" ]] ; then # Honors LP_USER_ALWAYS
+                __dotmatrix_make_field "${DOTMATRIX_USER_LOCAL}" "${DOTMATRIX_COLOR_DARK[@]}"
+                _DOTMATRIX_USER="${dotmatrix_field}"
+            else
+                __dotmatrix_make_field "${lp_username}" "${DOTMATRIX_COLOR_DARK[@]}"
+                _DOTMATRIX_USER="${dotmatrix_field}"
+            fi
             ;;
         1) # other user
-            _lp_username
-            __dotmatrix_make_field "${lp_username}" "${DOTMATRIX_COLOR_NOTE[@]}"
+            _lp_username_color
+            __dotmatrix_make_field "${lp_username_color}" "${DOTMATRIX_COLOR_NOTE[@]}"
             _DOTMATRIX_USER="${dotmatrix_field}"
             ;;
         2) # root
