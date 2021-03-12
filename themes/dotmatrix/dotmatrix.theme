@@ -294,7 +294,8 @@ _lp_dotmatrix_theme_prompt() {
     local side_as_text="$(_lp_as_text "${side}")"
     local head_as_text="$(_lp_as_text "${header}")"
     # FIXME within SSH, COLUMNS seems to be broken
-    local head_width=$((${COLUMNS}-${#side_as_text}-${#head_as_text}-6)) # Why -6? I have no idea.
+    local head_width=$((${COLUMNS}-${#side_as_text}-${#head_as_text}))
+    #-6)) # Why -6? I have no idea.
     if [[ $head_width -lt 0 ]] ; then
         head_width=0
     fi
@@ -344,8 +345,9 @@ _lp_dotmatrix_theme_prompt() {
     # PROMPT LINE
     ####################################################################
 
+    prompt=""
     lp_terminal_format "${DOTMATRIX_COLOR_DARK[@]}"
-    prompt="${lp_terminal_format}·" # Put internet here when (if) it's done.
+    prompt+="${lp_terminal_format}·" # Put internet here when (if) it's done.
 
     local net_sep_color="${DOTMATRIX_COLOR_LITE[@]}"
     if _lp_find_vcs && _lp_vcs_commits_off_remote ; then
@@ -805,15 +807,18 @@ __dotmatrix_make_field() { # string, (color array)
 }
 
 __dotmatrix_make_sep_plug() { # color
-    local lp_terminal_format
     # fg, bg, bold, underline, fallback_fg, fallback_bg
     #  0 = set last color to current color
     # -1 = set color to last color
     # -2 = keep last color
     # -3 = set last fg to last bg (and conversely)
+    local lp_terminal_format sep
+    sep="${DOTMATRIX_PLUG}"
+    if [[ "${_lp_last_ab_color-}" == "${2-}" ]] ; then
+        sep="${DOTMATRIX_MEAN}"
+    fi
     lp_terminal_format -3 "${2-}" 0 0 -1 "${6-}"
-    dotmatrix_sep="${DOTMATRIX_SPACE_VOID}${lp_terminal_format}${DOTMATRIX_PLUG}${DOTMATRIX_SPACE_VOID}"
-    # FIXME if same color, then insert DOTMATRIX_MEAN
+    dotmatrix_sep="${DOTMATRIX_SPACE_VOID}${lp_terminal_format}${sep}${DOTMATRIX_SPACE_VOID}"
 }
 
 __dotmatrix_make_sep_link() { # color
