@@ -28,8 +28,8 @@ like this:
 
 See :ref:`Templates <templates>` for what each section will look like.
 
-Configuation
-============
+Configuration
+=============
 
 As the default theme, all of the normal :doc:`../config` are respected.
 
@@ -186,6 +186,19 @@ default order if the user does not configure a different template.
 
    The current Python (or Conda) virtual environment. See
    :attr:`LP_ENABLE_VIRTUALENV`.
+
+.. attribute:: LP_RUBY_VENV
+
+   The current Ruby virtual environment. See
+   :attr:`LP_ENABLE_RUBY_VENV`.
+
+   .. versionadded:: 2.1
+
+.. attribute:: LP_TFSPACE
+
+   The current Terraform workspace. See :attr:`LP_ENABLE_TERRAFORM`.
+
+   .. versionadded:: 2.1
 
 .. attribute:: LP_KUBECONTEXT
 

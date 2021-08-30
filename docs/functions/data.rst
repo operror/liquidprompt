@@ -47,12 +47,18 @@ Battery
 Development Environment
 -----------------------
 
-.. function:: _lp_kubernetes_context() -> var:lp_kubernetes_context
+.. function:: _lp_kubernetes_context() -> var:lp_kubernetes_context, var:lp_kubernetes_namespace
 
    Returns ``true`` if a Kubernetes context is found.
    Returns the Kubernetes context name or the first name component.
 
-   Splitting long context names into components is defined by :attr:`LP_DELIMITER_KUBECONTEXT`.
+   Splitting long context names into components is defined by
+   :attr:`LP_DELIMITER_KUBECONTEXT_SUFFIX` and
+   :attr:`LP_DELIMITER_KUBECONTEXT_PREFIX`. Both use greedy matches - see
+   :doc:`../config` for examples.
+
+   If enabled by :attr:`LP_ENABLE_KUBE_NAMESPACE`, will also return the default
+   namespace for the current context, if one is set.
 
    Can be disabled by :attr:`LP_ENABLE_KUBECONTEXT`.
 
@@ -60,7 +66,7 @@ Development Environment
 
 .. function:: _lp_python_env() -> var:lp_python_env
 
-   Retuns ``true`` if a Python or Conda environment is detected. Returns the
+   Returns ``true`` if a Python or Conda environment is detected. Returns the
    virtual environment name.
 
    If the environment name contains a forward slash (``/``), only the substring
@@ -69,6 +75,18 @@ Development Environment
    Can be disabled by :attr:`LP_ENABLE_VIRTUALENV`.
 
    .. versionadded:: 2.0
+
+.. function:: _lp_ruby_env() -> var:lp_ruby_env
+
+   Returns ``true`` if a RVM or RBENV ruby environment is detected. Returns the
+   virtual environment name.
+
+   In the case of a RVM environment, the label displayed can be customized
+   with the :attr:`LP_RUBY_RVM_PROMPT_OPTIONS`.
+
+   Can be disabled by :attr:`LP_ENABLE_RUBY_VENV`.
+
+   .. versionadded:: 2.1
 
 .. function:: _lp_software_collections() -> var:lp_software_collections
 
@@ -83,14 +101,24 @@ Development Environment
 
    .. _`Red Hat Software Collection`: https://developers.redhat.com/products/softwarecollections/overview
 
+.. function:: _lp_terraform_env() -> var:lp_terraform_env
+
+   Returns ``true`` if a Terraform workspace is detected. Returns the workspace
+   name.
+
+   Can be enabled by :attr:`LP_ENABLE_TERRAFORM`.
+
+   .. versionadded:: 2.1
+
+
 Environment
 -----------
 
 .. function:: _lp_aws_profile() -> var:lp_aws_profile
 
-   Returns ``true`` if the :envvar:`AWS_PROFILE` or :envvar:`AWS_DEFAULT_PROFILE`
-   variables are found in the environment (in that order of preference).
-   Returns the contents of the variable.
+   Returns ``true`` if the :envvar:`AWS_PROFILE`, :envvar:`AWS_DEFAULT_PROFILE`,
+   or :envvar:`AWS_VAULT` variables are found in the environment
+   (in that order of preference). Returns the contents of the variable.
 
    Can be disabled by :attr:`LP_ENABLE_AWS_PROFILE`.
 
@@ -249,25 +277,24 @@ OS
 
    .. versionadded:: 2.0
 
-.. function:: _lp_hostname() -> var:lp_hostname
+.. function:: _lp_hostname() -> var:lp_hostname, var:lp_hostname_raw
 
    Returns ``true`` if a hostname should be displayed. Returns ``1`` if the
    connection type is local and :attr:`LP_HOSTNAME_ALWAYS` is not ``1``.
 
-   Returns the hostname string.
+   Returns the hostname string in *lp_hostname*.
 
-   .. note::
-
-      The returned string is not the real hostname, instead it is the shell
-      escape code for hostname, so the shell will substitute the real user ID
-      when it evaluates :envvar:`PS1`.
-
-   .. deprecated:: 2.0
-      Also sets :attr:`LP_HOST_SYMBOL` to the same return string.
+   Returns the hostname string not passed through :func:`__lp_escape` in
+   *lp_hostname_raw*.
 
    Can be disabled by :attr:`LP_HOSTNAME_ALWAYS` set to ``-1``.
 
    .. versionadded:: 2.0
+
+   .. versionchanged:: 2.1
+      Returns the actual hostname instead of a shell prompt escape code.
+      Added *lp_hostname_raw* return value.
+      No longer sets :attr:`LP_HOST_SYMBOL` to the same return string.
 
 .. function:: _lp_sudo_active()
 
@@ -289,22 +316,23 @@ OS
 
    .. versionadded:: 2.0
 
-.. function:: _lp_username() -> var:lp_username
+.. function:: _lp_username() -> var:lp_username, var:lp_username_raw
 
    Returns ``true`` if a username should be displayed. Returns ``1`` if the
    user is the login user and :attr:`LP_USER_ALWAYS` is not ``1``.
 
-   Returns the current user ID.
+   Returns the current user ID in *lp_username*.
 
-   .. note::
-
-      The returned string is not a real user ID, instead it is the shell escape
-      code for user, so the shell will substitute the real user ID when it
-      evaluates :envvar:`PS1`.
+   Returns the current user ID not passed through :func:`__lp_escape` in
+   *lp_username_raw*.
 
    Can be disabled by :attr:`LP_USER_ALWAYS` set to ``-1``.
 
    .. versionadded:: 2.0
+
+   .. versionchanged:: 2.1
+      Returns the actual username instead of a shell prompt escape code.
+      Added *lp_username_raw* return value.
 
 Path
 ----
@@ -315,9 +343,10 @@ Path
    [separator_format]) -> var:lp_path, var:lp_path_format
 
    Returns a shortened and formatted string indicating the current working
-   directory path. *lp_path* contains the path without any formatting or custom
-   separators, intended for use in the terminal title. *lp_path_format* contains
-   the complete formatted path, to be inserted into the prompt.
+   directory path. *lp_path* contains the path without any formatting, custom
+   separators, or shell escapes, intended for use in the terminal title.
+   *lp_path_format* contains the complete formatted path, to be inserted into
+   the prompt.
 
    The behavior of the shortening is controlled by
    :attr:`LP_ENABLE_SHORTEN_PATH`, :attr:`LP_PATH_METHOD`,
@@ -347,6 +376,9 @@ Path
 
    .. versionadded:: 2.0
 
+   .. versionchanged:: 2.1
+      Changed *lp_path* to no longer contain shell escapes.
+
 Runtime
 -------
 
@@ -372,6 +404,9 @@ Temperature
 
    If the threshold is not surpassed, the highest temperature is still returned.
 
+   If no temperature data is found, returns ``false`` and *lp_temperature* will
+   not be set.
+
    The threshold is configured with :attr:`LP_TEMP_THRESHOLD`.
 
    Can be disabled by :attr:`LP_ENABLE_TEMP`.
@@ -386,26 +421,22 @@ Time
 .. function:: _lp_time() -> var:lp_time
 
    Returns ``true`` if digital time is enabled. Returns the current digital time
-   string.
+   string, formatting set by :attr:`LP_TIME_FORMAT`.
 
-   .. note::
-
-      The returned string is not the real time, instead it is the shell escape
-      code for time, so the shell will substitute the real current time when it
-      evaluates :envvar:`PS1`.
-
-   Can be disabled by :attr:`LP_ENABLE_TIME` or :attr:`LP_TIME_ANALOG` set to
+   Can be disabled by :attr:`LP_ENABLE_TIME`, or :attr:`LP_TIME_ANALOG` set to
    ``1``.
 
    .. versionadded:: 2.0
+
+   .. versionchanged:: 2.1
+      Returns the actual time instead of a shell prompt escape code.
 
 .. function:: _lp_analog_time() -> var:lp_analog_time
 
    Returns ``true`` if analog time is enabled. Returns the current analog time
    as a single Unicode character, accurate to the closest 30 minutes.
 
-   Can be disabled by :attr:`LP_ENABLE_TIME` or :attr:`LP_TIME_ANALOG` set to
+   Can be disabled by :attr:`LP_ENABLE_TIME`, or :attr:`LP_TIME_ANALOG` set to
    ``0``.
 
    .. versionadded:: 2.0
-

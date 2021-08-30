@@ -59,8 +59,8 @@ See the `Powerline Fonts installation docs`_ for help.
 
 .. _`Powerline fonts installation docs`: https://powerline.readthedocs.io/en/latest/installation.html#fonts-installation
 
-Configuation
-============
+Configuration
+=============
 
 Liquidprompt Configuration
 --------------------------
@@ -288,8 +288,8 @@ Setup
 Like the ``powerline`` theme, you will need a compatible font.
 See the `Powerline Fonts installation docs`_ for help.
 
-Configuation
-============
+Configuration
+=============
 
 Liquidprompt Configuration
 --------------------------
@@ -313,6 +313,7 @@ All Liquidprompt config options are respected, **except for**:
 * :attr:`LP_COLOR_SSH`
 * :attr:`LP_COLOR_SU`
 * :attr:`LP_COLOR_TELNET`
+* :attr:`LP_COLOR_TERRAFORM`
 * :attr:`LP_COLOR_TIME`
 * :attr:`LP_COLOR_USER_ALT`
 * :attr:`LP_COLOR_USER_LOGGED`
@@ -354,17 +355,38 @@ Powerline Full adds these config options:
 Markers
 _______
 
+.. attribute:: POWERLINE_AWS_PROFILE_MARKER
+   :type: string
+   :value: "AWS: "
+
+   The marker string used to indicate the following string is the name of an
+   AWS profile.
+
 .. attribute:: POWERLINE_CHROOT_MARKER
    :type: string
    :value: "chroot: "
 
    The marker string used to indicate the following string is a chroot.
 
+.. attribute:: POWERLINE_KUBECONTEXT_MARKER
+   :type: string
+   :value: $LP_MARK_KUBECONTEXT
+
+   The marker string used to indicate the following string is the name of a
+   kubectl context.
+
 .. attribute:: POWERLINE_PROXY_MARKER
    :type: string
    :value: "proxy: "
 
    The marker string used to indicate the following string is a HTTP proxy.
+
+.. attribute:: POWERLINE_RUBY_ENV_MARKER
+   :type: string
+   :value: "ruby: "
+
+   The marker string used to indicate the following string is a Ruby
+   environment.
 
 .. attribute:: POWERLINE_SOFTWARE_COLLECTION_MARKER
    :type: string
@@ -373,8 +395,23 @@ _______
    The marker string used to indicate the following string is a Red Hat Software
    Collection.
 
+.. attribute:: POWERLINE_TERRAFORM_ENV_MARKER
+   :type: string
+   :value: "(tf) "
+
+   The marker string used to indicate the following string is a Terraform
+   workspace.
+
+   .. versionadded:: 2.1
+
 Colors
 ______
+
+.. attribute:: POWERLINE_AWS_PROFILE_COLOR
+   :type: array<int>
+   :value: (190 236 0 0 3 0)
+
+   Color for the AWS profile section.
 
 .. attribute:: POWERLINE_BATTERY_COLOR
    :type: array<int>
@@ -393,6 +430,12 @@ ______
    :value: $POWERLINE_NEUTRAL_COLOR
 
    Color for the directory stack section.
+
+.. attribute:: POWERLINE_KUBECONTEXT_COLOR
+   :type: array<int>
+   :value: (231 74 0 0 7 4)
+
+   Color for the Kubernetes context section.
 
 .. attribute:: POWERLINE_LOAD_COLOR
    :type: array<int>
@@ -413,6 +456,12 @@ ______
 
    Color for the HTTP proxy section.
 
+.. attribute:: POWERLINE_RUBY_ENV_COLOR
+   :type: array<int>
+   :value: (231 38 0 0 7 4)
+
+   Color for the Ruby environment section.
+
 .. attribute:: POWERLINE_RUNTIME_COLOR
    :type: array<int>
    :value: (226, 17, 0, 0, 3, 4)
@@ -430,6 +479,14 @@ ______
    :value: (-1, 240, 0, 0, -1, 0)
 
    Color for the temperature section.
+
+.. attribute:: POWERLINE_TERRAFORM_ENV_COLOR
+   :type: array<int>
+   :value: (231 182 0 0 7 4)
+
+   Color for the Terraform workspace.
+
+   .. versionadded:: 2.1
 
 .. attribute:: POWERLINE_TIME_COLOR
    :type: array<int>

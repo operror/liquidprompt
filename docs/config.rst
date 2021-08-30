@@ -158,7 +158,7 @@ General
    Display the root directory of the current VCS repository with special
    formatting, set by :attr:`LP_COLOR_PATH_VCS_ROOT`. If
    :attr:`LP_ENABLE_SHORTEN_PATH` is enabled, also prevent the path shortening
-   from shortening or hidding the VCS root directory.
+   from shortening or hiding the VCS root directory.
 
 .. attribute:: LP_PS1_POSTFIX
    :type: string
@@ -174,27 +174,66 @@ General
    A string displayed at the start of the prompt. Can also be set with
    :func:`prompt_tag`.
 
+.. attribute:: LP_TIME_FORMAT
+   :type: string
+   :value: "%H:%M:%S"
+
+   The formatting string passed to :manpage:`date(1)` using formatting from
+   :manpage:`strftime(3)` used to display the current date and/or time.
+
+   See also: :attr:`LP_ENABLE_TIME`.
+
+   .. versionadded:: 2.1
+
 Features
 --------
 
-.. attribute:: LP_DELIMITER_KUBECONTEXT
+.. attribute:: LP_DELIMITER_KUBECONTEXT_PREFIX
    :type: string
    :value: ""
 
-   Delimiter to shorten the Kubernetes context.
+   Delimiter to shorten the Kubernetes context by removing a prefix.
+
+   Usage example:
+
+   * if your context names are cluster-dev and cluster-test,
+     then set this to "-" in order to output "dev" and "test" in prompt.
+   * if using AWS EKS then set this to '/' to show only the cluster name,
+     without the rest of the ARN
+     (arn:aws:eks:$AWS_REGION:$ACCOUNT_ID:cluster/$CLUSTER_NAME)
+   * alternatively, if using AWS EKS, set this to ':' to show only
+     "cluster/$CLUSTER_NAME".  (Note: the prefix removed is a greedy match - it
+     contains all the ":"s in the input.)
+
+   If set to the empty string no truncating will occur (this is the default).
+
+   See also: :attr:`LP_ENABLE_KUBECONTEXT`,
+   :attr:`LP_DELIMITER_KUBECONTEXT_SUFFIX`, :attr:`LP_COLOR_KUBECONTEXT`,
+   and :attr:`LP_MARK_KUBECONTEXT`.
+
+   .. versionadded:: 2.1
+
+.. attribute:: LP_DELIMITER_KUBECONTEXT_SUFFIX
+   :type: string
+   :value: ""
+
+   Delimiter to shorten the Kubernetes context by removing a suffix.
 
    Usage example:
 
    * if your context names are dev-cluster and test-cluster,
      then set this to "-" in order to output "dev" and "test" in prompt.
    * if your context names are dev.k8s.example.com and test.k8s.example.com,
-     then set this to "." in order to output "dev" and "test" in prompt.
+     then set this to "." in order to output "dev" and "test" in prompt. (Note:
+     the suffix removed is a greedy match - it contains all the "."s in the
+     input.)
    * if using OpenShift then set this to "/" to show only the project name
      without the cluster and user parts.
 
    If set to the empty string no truncating will occur (this is the default).
 
-   See also: :attr:`LP_ENABLE_KUBECONTEXT`, :attr:`LP_COLOR_KUBECONTEXT`,
+   See also: :attr:`LP_ENABLE_KUBECONTEXT`,
+   :attr:`LP_DELIMITER_KUBECONTEXT_PREFIX`, :attr:`LP_COLOR_KUBECONTEXT`,
    and :attr:`LP_MARK_KUBECONTEXT`.
 
    .. versionadded:: 2.1
@@ -232,11 +271,14 @@ Features
    :type: bool
    :value: 1
 
-   Display the current value of :envvar:`AWS_PROFILE` or 
-   :envvar:`AWS_DEFAULT_PROFILE`. These variables are used to switch between
-   configuration profiles by the `AWS CLI`_.
+   Display the current value of :envvar:`AWS_PROFILE`,
+   :envvar:`AWS_DEFAULT_PROFILE`, or :envvar:`AWS_VAULT`. AWS_PROFILE and
+   AWS_DEFAULT_PROFILE are used to switch between configuration profiles by
+   the `AWS CLI`_. AWS_VAULT is used by `aws-vault`_ to specify the AWS
+   profile in use.
 
    .. _`AWS CLI`: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html
+   .. _`aws-vault`: https://github.com/99designs/aws-vault
 
    See also: :attr:`LP_COLOR_AWS_PROFILE`.
 
@@ -375,7 +417,27 @@ Features
 
    .. _`context`: https://kubernetes.io/docs/tasks/access-application-cluster/configure-access-multiple-clusters/
 
-   See also: :attr:`LP_DELIMITER_KUBECONTEXT`, :attr:`LP_COLOR_KUBECONTEXT`,
+   See also: :attr:`LP_ENABLE_KUBE_NAMESPACE`,
+   :attr:`LP_DELIMITER_KUBECONTEXT_PREFIX`,
+   :attr:`LP_DELIMITER_KUBECONTEXT_SUFFIX`,
+   :attr:`LP_COLOR_KUBECONTEXT`,
+   and :attr:`LP_MARK_KUBECONTEXT`.
+
+   .. versionadded:: 2.1
+
+.. attribute:: LP_ENABLE_KUBE_NAMESPACE
+   :type: bool
+   :value: 0
+
+   Display the current `Kubernetes <https://kubernetes.io/>`_ default
+   `namespace`_ in the current context.
+
+   .. _`namespace`: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/#setting-the-namespace-preference
+
+   See also: :attr:`LP_ENABLE_KUBECONTEXT`,
+   :attr:`LP_DELIMITER_KUBECONTEXT_PREFIX`,
+   :attr:`LP_DELIMITER_KUBECONTEXT_SUFFIX`,
+   :attr:`LP_COLOR_KUBECONTEXT`,
    and :attr:`LP_MARK_KUBECONTEXT`.
 
    .. versionadded:: 2.1
@@ -503,7 +565,8 @@ Features
    :type: bool
    :value: 0
 
-   Displays the time at which the prompt was shown.
+   Displays the time at which the prompt was shown. The format can be configured
+   with :attr:`LP_TIME_FORMAT`.
 
    See also: :attr:`LP_TIME_ANALOG` and :attr:`LP_COLOR_TIME`.
 
@@ -518,6 +581,17 @@ Features
 
    .. warning::
       This may not work properly on exotic terminals. Please report any issues.
+
+.. attribute:: LP_ENABLE_TITLE_COMMAND
+   :type: bool
+   :value: 1
+
+   Postpend the currently running command to the terminal title while the
+   command is running.
+
+   :attr:`LP_ENABLE_TITLE` must be enabled to have any effect.
+
+   .. versionadded:: 2.1
 
 .. attribute:: LP_ENABLE_VCS_ROOT
    :type: bool
@@ -537,6 +611,30 @@ Features
    .. _Python: https://docs.python.org/tutorial/venv.html
    .. _Conda: https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html
 
+.. attribute:: LP_ENABLE_RUBY_VENV
+   :type: bool
+   :value: 1
+
+   Display the currently activated RVM_ or RBENV_ virtual environment.
+
+   See also: :attr:`LP_RUBY_RVM_PROMPT_OPTIONS` and
+   :attr:`LP_COLOR_VIRTUALENV`.
+
+   .. _RVM: https://rvm.io/
+   .. _RBENV: https://github.com/rbenv/rbenv
+
+.. attribute:: LP_ENABLE_TERRAFORM
+   :type: bool
+   :value: 0
+
+   Display the currently activated `Terraform`_ workspace.
+
+   See also: :attr:`LP_COLOR_TERRAFORM`.
+
+   .. _Terraform: https://www.terraform.io/docs/language/index.html
+
+   .. versionadded:: 2.1
+
 .. attribute:: LP_HOSTNAME_ALWAYS
    :type: int
    :value: 0
@@ -555,6 +653,17 @@ Features
 
    Display the actual values of load and batteries along with their
    corresponding marks. Disable to only print the colored marks.
+
+.. attribute:: LP_RUBY_RVM_PROMPT_OPTIONS
+   :type: array<string>
+   :value: (i v g s)
+
+   An array of single letter switches to customize the `RVM prompt`_ output.
+
+   Will only have an effect if :attr:`LP_ENABLE_RUBY_VENV` is enabled and you
+   are using RVM (i.e. no effect with RBENV).
+
+   .. _`RVM prompt`: https://rvm.io/workflow/prompt
 
 .. attribute:: LP_TIME_ANALOG
    :type: bool
@@ -1170,6 +1279,16 @@ Valid preset color variables are:
 
    See also: :attr:`LP_HOSTNAME_ALWAYS`.
 
+.. attribute:: LP_COLOR_TERRAFORM
+   :type: string
+   :value: $PINK
+
+   Color used for displaying a Terraform workspace.
+
+   See also: :attr:`LP_ENABLE_TERRAFORM`.
+
+   .. versionadded:: 2.1
+
 .. attribute:: LP_COLOR_TIME
    :type: string
    :value: $BLUE
@@ -1235,4 +1354,3 @@ Valid preset color variables are:
    :value: $GREEN
 
    Color used for indicating that a display is connected.
-

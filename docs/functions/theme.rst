@@ -188,6 +188,12 @@ specific text and formatting may change.
 
    .. versionadded:: 2.0
 
+.. function:: _lp_ruby_env_color() -> var:lp_ruby_env_color
+
+   Returns :func:`_lp_ruby_env` with color from :attr:`LP_COLOR_VIRTUALENV`.
+
+   .. versionadded:: 2.1
+
 .. function:: _lp_runtime_color() -> var:lp_runtime_color
 
    Returns :func:`_lp_runtime_format` with color from :attr:`LP_COLOR_RUNTIME`.
@@ -227,6 +233,12 @@ specific text and formatting may change.
       Renamed from ``_lp_temperature``.
       Return code matches data function.
       Return method changed from stdout.
+
+.. function:: _lp_terraform_env_color() -> var:lp_terraform_env_color
+
+   Returns :func:`_lp_terraform_env` with color from :attr:`LP_COLOR_TERRAFORM`.
+
+   .. versionadded:: 2.1
 
 .. function:: _lp_time_color() -> var:lp_time_color
 
